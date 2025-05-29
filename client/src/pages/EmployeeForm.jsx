@@ -16,21 +16,43 @@ export default function EmployeeForm() {
     f_Image: "",
   });
 
+  const [errors, setErrors] = useState({});
+
   useEffect(() => {
     if (id) {
-      axios
-        .get(`/api/employees/${id}`)
-        .then((res) => setForm(res.data))
-        .catch(() => alert("Employee not found"));
+      const storedEmployee = localStorage.getItem("newEmployee");
+      if (storedEmployee) {
+        setForm(JSON.parse(storedEmployee));
+      } else {
+        axios
+          .get(`http://localhost:3000/api/employees/${id}`)
+          .then((res) => setForm(res.data))
+          .catch(() => alert("Employee not found"));
+      }
     }
   }, [id]);
 
   const handleChange = (e) => {
     const { name, value, type, files } = e.target;
+
     if (type === "file") {
-      setForm((prev) => ({ ...prev, [name]: files[0].name }));
+      const file = files[0];
+      if (file) {
+        const validTypes = ["image/jpeg", "image/png"];
+        if (!validTypes.includes(file.type)) {
+          setErrors((prev) => ({
+            ...prev,
+            f_Image: "Only JPG or PNG files are allowed",
+          }));
+          return;
+        } else {
+          setErrors((prev) => ({ ...prev, f_Image: "" }));
+        }
+        setForm((prev) => ({ ...prev, [name]: file.name }));
+      }
     } else {
       setForm((prev) => ({ ...prev, [name]: value }));
+      setErrors((prev) => ({ ...prev, [name]: "" }));
     }
   };
 
@@ -42,20 +64,65 @@ export default function EmployeeForm() {
     setForm((prev) => ({ ...prev, f_Course: selected }));
   };
 
+  const validateForm = () => {
+    const newErrors = {};
+
+    if (!form.f_Name.trim()) newErrors.f_Name = "Name is required";
+
+    if (!form.f_Email.trim()) {
+      newErrors.f_Email = "Email is required";
+    } else if (!/^[\w.-]+@[a-zA-Z\d.-]+\.[a-zA-Z]{2,}$/.test(form.f_Email)) {
+      newErrors.f_Email = "Invalid email format";
+    } else {
+      const stored = JSON.parse(localStorage.getItem("employees") || "[]");
+      const duplicate = stored.some(
+        (emp) =>
+          emp.f_Email === form.f_Email && (!id || emp.f_Id !== parseInt(id))
+      );
+      if (duplicate) newErrors.f_Email = "Email already exists";
+    }
+
+    if (!form.f_Mobile.trim()) {
+      newErrors.f_Mobile = "Mobile is required";
+    } else if (!/^\d+$/.test(form.f_Mobile)) {
+      newErrors.f_Mobile = "Mobile must be numeric";
+    }
+
+    if (!form.f_Designation) newErrors.f_Designation = "Select a designation";
+    if (!form.f_gender) newErrors.f_gender = "Select gender";
+    if (!form.f_Course.length) newErrors.f_Course = "Select at least one course";
+    if (!form.f_Image) newErrors.f_Image = "Upload a valid JPG/PNG image";
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (!validateForm()) return;
+
     try {
       if (id) {
         await axios.put(`http://localhost:3000/api/employees/${id}`, form, {
           withCredentials: true,
         });
         alert("Employee updated");
+
+        const stored = localStorage.getItem("employees");
+        let employees = stored ? JSON.parse(stored) : [];
+
+        employees = employees.map((emp) =>
+          emp.f_Id === parseInt(id) ? { ...emp, ...form } : emp
+        );
+
+        localStorage.setItem("employees", JSON.stringify(employees));
       } else {
         await axios.post("http://localhost:3000/api/employees", form, {
           withCredentials: true,
         });
         alert("Employee created");
       }
+
       navigate("/employees");
     } catch {
       alert("Error saving employee");
@@ -68,45 +135,57 @@ export default function EmployeeForm() {
         {id ? "Edit Employee" : "Create Employee"}
       </h2>
       <form onSubmit={handleSubmit} className="space-y-4">
-        <input
-          name="f_Name"
-          value={form.f_Name}
-          onChange={handleChange}
-          placeholder="Name"
-          required
-          className="w-full border border-gray-300 p-2 rounded"
-        />
+        <div>
+          <input
+            name="f_Name"
+            value={form.f_Name}
+            onChange={handleChange}
+            placeholder="Name"
+            className="w-full border border-gray-300 p-2 rounded"
+          />
+          {errors.f_Name && <p className="text-red-500 text-sm">{errors.f_Name}</p>}
+        </div>
 
-        <input
-          name="f_Email"
-          value={form.f_Email}
-          onChange={handleChange}
-          placeholder="Email"
-          required
-          className="w-full border border-gray-300 p-2 rounded"
-        />
+        <div>
+          <input
+            name="f_Email"
+            value={form.f_Email}
+            onChange={handleChange}
+            placeholder="Email"
+            className="w-full border border-gray-300 p-2 rounded"
+          />
+          {errors.f_Email && <p className="text-red-500 text-sm">{errors.f_Email}</p>}
+        </div>
 
-        <input
-          name="f_Mobile"
-          value={form.f_Mobile}
-          onChange={handleChange}
-          placeholder="Mobile"
-          required
-          className="w-full border border-gray-300 p-2 rounded"
-        />
+        <div>
+          <input
+            name="f_Mobile"
+            value={form.f_Mobile}
+            onChange={handleChange}
+            placeholder="Mobile"
+            className="w-full border border-gray-300 p-2 rounded"
+          />
+          {errors.f_Mobile && (
+            <p className="text-red-500 text-sm">{errors.f_Mobile}</p>
+          )}
+        </div>
 
-        <select
-          name="f_Designation"
-          value={form.f_Designation}
-          onChange={handleChange}
-          required
-          className="w-full border border-gray-300 p-2 rounded"
-        >
-          <option value="">Select Designation</option>
-          <option value="Manager">Manager</option>
-          <option value="HR">HR</option>
-          <option value="Developer">Developer</option>
-        </select>
+        <div>
+          <select
+            name="f_Designation"
+            value={form.f_Designation}
+            onChange={handleChange}
+            className="w-full border border-gray-300 p-2 rounded"
+          >
+            <option value="">Select Designation</option>
+            <option value="Manager">Manager</option>
+            <option value="HR">HR</option>
+            <option value="Developer">Developer</option>
+          </select>
+          {errors.f_Designation && (
+            <p className="text-red-500 text-sm">{errors.f_Designation}</p>
+          )}
+        </div>
 
         <div className="flex gap-4 items-center">
           <label className="flex items-center gap-1">
@@ -130,25 +209,38 @@ export default function EmployeeForm() {
             Female
           </label>
         </div>
+        {errors.f_gender && (
+          <p className="text-red-500 text-sm">{errors.f_gender}</p>
+        )}
 
-        <select
-          multiple
-          value={form.f_Course}
-          onChange={handleCourseChange}
-          className="w-full border border-gray-300 p-2 rounded"
-        >
-          <option value="MERN">MERN</option>
-          <option value="MEAN">MEAN</option>
-          <option value="Python">Python</option>
-          <option value="Java">Java</option>
-        </select>
+        <div>
+          <select
+            multiple
+            value={form.f_Course}
+            onChange={handleCourseChange}
+            className="w-full border border-gray-300 p-2 rounded"
+          >
+            <option value="MERN">MERN</option>
+            <option value="MEAN">MEAN</option>
+            <option value="Python">Python</option>
+            <option value="Java">Java</option>
+          </select>
+          {errors.f_Course && (
+            <p className="text-red-500 text-sm">{errors.f_Course}</p>
+          )}
+        </div>
 
-        <input
-          type="file"
-          name="f_Image"
-          onChange={handleChange}
-          className="w-full"
-        />
+        <div>
+          <input
+            type="file"
+            name="f_Image"
+            onChange={handleChange}
+            className="w-full"
+          />
+          {errors.f_Image && (
+            <p className="text-red-500 text-sm">{errors.f_Image}</p>
+          )}
+        </div>
 
         <button
           type="submit"

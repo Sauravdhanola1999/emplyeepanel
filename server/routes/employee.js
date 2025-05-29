@@ -1,11 +1,8 @@
 import { Router } from "express";
 const router = Router();
-import authMiddleware from "../middleware/authMiddleware.js";
 
 let employees = [];
 let empIdCounter = 1;
-
-router.use(authMiddleware);
 
 router.get("/", (req, res) => {
   res.json(employees);
@@ -24,7 +21,6 @@ router.post("/", (req, res) => {
     f_Createdate = new Date().toISOString(),
   } = req.body;
 
-  // ✅ Server-side validation
   if (!f_Name || !f_Email || !f_Mobile) {
     return res
       .status(400)
@@ -44,9 +40,23 @@ router.post("/", (req, res) => {
   };
 
   employees.push(newEmp);
-  res
-    .status(201)
-    .json({ message: "Employee created successfully", employee: newEmp });
+
+  return res.status(201).json({
+    message: "Employee created successfully",
+    employee: newEmp,
+  });
+});
+
+// GET: Get a single employee by ID
+router.get("/:id", (req, res) => {
+  const empId = parseInt(req.params.id);
+  const employee = employees.find((emp) => emp.f_Id === empId);
+
+  if (!employee) {
+    return res.status(404).json({ message: "Employee not found" });
+  }
+
+  res.json(employee);
 });
 
 // PUT: Edit Employee
@@ -55,9 +65,20 @@ router.put("/:id", (req, res) => {
   const index = employees.findIndex((emp) => emp.f_Id === empId);
   if (index === -1)
     return res.status(404).json({ message: "Employee not found" });
-
   employees[index] = { ...employees[index], ...req.body };
   res.json(employees[index]);
+});
+
+// GET: Get a single employee by ID
+router.get("/:id", (req, res) => {
+  const empId = parseInt(req.params.id);
+  const employee = employees.find((emp) => emp.f_Id === empId);
+
+  if (!employee) {
+    return res.status(404).json({ message: "Employee not found" });
+  }
+
+  res.json(employee);
 });
 
 // DELETE: Delete Employee

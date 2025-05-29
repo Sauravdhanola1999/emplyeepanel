@@ -1,20 +1,21 @@
 import { Router } from "express";
 const router = Router();
 
-const adminUser = [{ f_sno: 1, f_userName: "admin", f_Pwd: "admin123" }];
-
-router.post("/login", (req, res) => {
+router.post('/login', (req, res) => {
   const { username, password } = req.body;
-  if (adminUser.f_userName && adminUser.f_Pwd) {
-    res.cookie("username", adminUser.f_userName, { httpOnly: true });
-    return res.json({
-      message: "Login successful",
-      username: adminUser.f_userName,
-    });
+  if (!username || !password) {
+    return res.status(400).json({ message: 'Username and password required' });
   }
-  console.log("Username from cookie:", req.cookies.username);
-  res.status(401).json({ message: "Invalid login details" });
+  res.cookie('auth', 'mock-token', {
+    httpOnly: true,
+    sameSite: 'Lax',
+    secure: false
+  });
+
+  return res.status(200).json({ message: 'Login successful', user: { username } });
 });
+
+
 
 router.post("/signout", (req, res) => {
   res.clearCookie("username");

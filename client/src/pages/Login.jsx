@@ -14,16 +14,20 @@ export default function Login() {
       alert("Username and Password are required");
       return;
     }
-
     try {
-      const res = await axios.post("http://localhost:3000/api/auth/login", {
-        f_userName,
-        f_Pwd,
-      });
-      localStorage.setItem("username", res.data.f_userName); 
+      const res = await axios.post(
+        "http://localhost:3000/api/auth/login",
+        { username: f_userName, password: f_Pwd },
+        { withCredentials: true }
+      );
+      localStorage.setItem("username", res.data.username || f_userName);
       navigate("/dashboard");
     } catch (err) {
-      alert("Invalid login details");
+      if (err.response && err.response.data && err.response.data.message) {
+        alert(err.response.data.message); // shows "Invalid login details"
+      } else {
+        alert("Login failed");
+      }
     }
   };
 
