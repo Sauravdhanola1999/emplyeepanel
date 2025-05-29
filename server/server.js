@@ -19,6 +19,14 @@ app.use(cookieParser());
 app.use("/api/auth", authRoutes);
 app.use("/api/employees", employeeRoutes);
 
+
+app.get("/", (req, res)=>{
+    res.send({
+        activeStatus: true,
+        error: false,
+    })
+})
+
 app.listen(PORT, () => {
   console.log(`Server running at http://localhost:${PORT}`);
 });
