@@ -8,7 +8,7 @@ export default function EmployeeList() {
 
   const fetchEmployees = async () => {
     try {
-      const res = await axios.get("http://localhost:3000/api/employees");
+      const res = await axios.get("https://emplyeepanel.vercel.app/api/employees");
       setEmployees(res.data);
     } catch (err) {
       console.error(err);
@@ -20,7 +20,7 @@ export default function EmployeeList() {
     if (!window.confirm("Are you sure you want to delete this employee?"))
       return;
     try {
-      await axios.delete(`http://localhost:3000/api/employees/${id}`);
+      await axios.delete(`https://emplyeepanel.vercel.app/api/employees/${id}`);
       fetchEmployees();
     } catch (err) {
       alert("Failed to delete employee");

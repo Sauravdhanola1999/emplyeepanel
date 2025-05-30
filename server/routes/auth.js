@@ -15,11 +15,4 @@ router.post('/login', (req, res) => {
   return res.status(200).json({ message: 'Login successful', user: { username } });
 });
 
-
-
-router.post("/signout", (req, res) => {
-  res.clearCookie("username");
-  res.json({ message: "Signed out successfully" });
-});
-
 export default router;

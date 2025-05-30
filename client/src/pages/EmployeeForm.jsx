@@ -25,7 +25,7 @@ export default function EmployeeForm() {
         setForm(JSON.parse(storedEmployee));
       } else {
         axios
-          .get(`http://localhost:3000/api/employees/${id}`)
+          .get(`https://emplyeepanel.vercel.app/api/employees/${id}`)
           .then((res) => setForm(res.data))
           .catch(() => alert("Employee not found"));
       }
@@ -103,7 +103,7 @@ export default function EmployeeForm() {
 
     try {
       if (id) {
-        await axios.put(`http://localhost:3000/api/employees/${id}`, form, {
+        await axios.put(`https://emplyeepanel.vercel.app/api/employees/${id}`, form, {
           withCredentials: true,
         });
         alert("Employee updated");
@@ -117,7 +117,7 @@ export default function EmployeeForm() {
 
         localStorage.setItem("employees", JSON.stringify(employees));
       } else {
-        await axios.post("http://localhost:3000/api/employees", form, {
+        await axios.post("https://emplyeepanel.vercel.app/api/employees", form, {
           withCredentials: true,
         });
         alert("Employee created");
