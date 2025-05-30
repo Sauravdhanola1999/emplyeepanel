@@ -10,7 +10,10 @@ const PORT = 3000;
 app.use(express.json());
 app.use(
   cors({
-    origin: "http://localhost:5173", // Your frontend URL
+    origin: [
+      "https://cerulean-souffle-a4f63a.netlify.app/",
+      "http://localhost:5173",
+    ],
     credentials: true,
   })
 );
