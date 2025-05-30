@@ -3,6 +3,7 @@ import react from "@vitejs/plugin-react";
 
 // https://vitejs.dev/config/
 export default defineConfig({
-  base: "/myapp/",
   plugins: [react()],
+   base: '/', // Only change this if deploying to a subfolder
 });
+

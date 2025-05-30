@@ -7,13 +7,13 @@ import Navbar from "./components/NavBar";
 
 export default function App() {
   const location = useLocation();
-  const hideNavbar = location.pathname.startsWith("/login");
+  const hideNavbar = location.pathname === "/";
 
   return (
     <div>
       {!hideNavbar && <Navbar />}
       <Routes>
-        <Route path="/login" element={<Login />} />
+        <Route path="/" element={<Login />} />
         <Route path="/dashboard" element={<DashBoard />} />
         <Route path="/create-employee" element={<EmployeeForm />} />
         <Route path="/edit-employee/:id" element={<EmployeeForm />} />

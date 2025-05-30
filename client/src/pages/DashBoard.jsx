@@ -7,7 +7,7 @@ export default function DashBoard() {
 
   useEffect(() => {
     const user = localStorage.getItem("username");
-    if (!user) navigate("/login");
+    if (!user) navigate("/");
     setUsername(user);
   }, [navigate]);
 
